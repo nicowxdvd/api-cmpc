@@ -4,6 +4,7 @@ import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { QueryBooksDto } from './dto/query-books.dto';
 
+const escapar = (valor: string | number) => `"${String(valor).replace(/"/g, '""')}"`;
 @Injectable()
 export class BooksService {
   constructor(private readonly booksRepository: BooksRepository) {}
@@ -30,5 +31,21 @@ export class BooksService {
   async remove(id: number) {
     await this.findOne(id);
     await this.booksRepository.remove(id);
+  }
+
+  async exportCsv(query: QueryBooksDto) {
+    const libros = await this.booksRepository.findAllForExport(query);
+    const encabezado = ['ID', 'Título', 'Autor', 'Editorial', 'Género', 'Precio', 'Disponible'];
+    const filas = libros.map((l) => [
+      l.id,
+      l.titulo,
+      l.autor.nombre,
+      l.editorial.nombre,
+      l.genero.nombre,
+      l.precio,
+      l.disponible ? 'Sí' : 'No',
+    ]);
+    const lineas = [encabezado, ...filas].map((fila) => fila.map(escapar).join(','));
+    return '\uFEFF' + lineas.join('\n');
   }
 }

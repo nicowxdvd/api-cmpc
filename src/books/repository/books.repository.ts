@@ -11,10 +11,9 @@ const include = { autor: true, genero: true, editorial: true };
 export class BooksRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(query: QueryBooksDto) {
-    const {page, limit, search, autorId, generoId, editorialId, disponible, orderBy, order } = query;
-
-    const where: Prisma.LibroWhereInput = {
+  private buildWhere(query: QueryBooksDto): Prisma.LibroWhereInput {
+    const { search, autorId, generoId, editorialId, disponible } = query;
+    return {
       deletedAt: null,
       autorId,
       generoId,
@@ -22,6 +21,11 @@ export class BooksRepository {
       disponible,
       titulo: search ? { contains: search, mode: 'insensitive' } : undefined,
     };
+  }
+
+  async findAll(query: QueryBooksDto) {
+    const { page, limit, orderBy, order } = query;
+    const where = this.buildWhere(query);
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.libro.findMany({
@@ -35,6 +39,15 @@ export class BooksRepository {
     ]);
 
     return { data, total, page, limit };
+  }
+
+  findAllForExport(query: QueryBooksDto) {
+    const { orderBy, order } = query;
+    return this.prisma.libro.findMany({
+      where: this.buildWhere(query),
+      include,
+      orderBy: { [orderBy]: order },
+    });
   }
 
   findOne(id: number) {
