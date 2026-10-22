@@ -1,7 +1,6 @@
 services:
   db:
     image: postgres:16
-    container_name: cmpc-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: cmpc
@@ -16,6 +15,19 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://cmpc:cmpc123@db:5432/cmpc_libros
+      JWT_SECRET: jwt_secret_cambiarlo
+      JWT_EXPIRES_IN: 1h
+    ports:
+      - "3000:3000"
 
 volumes:
   cmpc_pgdata:
