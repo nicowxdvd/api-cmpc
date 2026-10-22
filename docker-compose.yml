@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16
+    container_name: cmpc-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cmpc
+      POSTGRES_PASSWORD: cmpc123
+      POSTGRES_DB: cmpc_libros
+    ports:
+      - "5432:5432"
+    volumes:
+      - cmpc_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cmpc -d cmpc_libros"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  cmpc_pgdata:

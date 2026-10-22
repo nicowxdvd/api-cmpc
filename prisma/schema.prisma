@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+model Autor {
+  id     Int     @id @default(autoincrement())
+  nombre String  @unique @db.VarChar(150)
+  libros Libro[]
+
+  @@map("autores")
+}
+
+model Genero {
+  id     Int     @id @default(autoincrement())
+  nombre String  @unique @db.VarChar(100)
+  libros Libro[]
+
+  @@map("generos")
+}
+
+model Editorial {
+  id     Int     @id @default(autoincrement())
+  nombre String  @unique @db.VarChar(150)
+  libros Libro[]
+
+  @@map("editoriales")
+}
+
+
+model Usuario {
+  id       Int    @id @default(autoincrement())
+  email    String @unique @db.VarChar(255)
+  password String @db.VarChar(255)
+  logs     Log[]
+
+  @@map("usuarios")
+}
+
+model Libro {
+  id          Int       @id @default(autoincrement())
+  titulo      String    @db.VarChar(255)
+  precio      Int
+  disponible  Boolean   @default(true)
+  imgUrl      String?   @map("img_url") @db.VarChar(500)
+  autorId     Int       @map("autor_id")
+  generoId    Int       @map("genero_id")
+  editorialId Int       @map("editorial_id")
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz
+
+  autor     Autor     @relation(fields: [autorId], references: [id], onDelete: Restrict)
+  genero    Genero    @relation(fields: [generoId], references: [id], onDelete: Restrict)
+  editorial Editorial @relation(fields: [editorialId], references: [id], onDelete: Restrict)
+
+  @@index([autorId])
+  @@index([editorialId])
+  @@index([generoId])
+  @@index([titulo])
+  @@index([deletedAt])
+  @@map("libros")
+}
+
+
+model Log {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int?     @map("usuario_id")
+  accion    String   @db.VarChar(20)
+  detalles  Json?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  usuario Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([usuarioId])
+  @@map("logs")
+}
