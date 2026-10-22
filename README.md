@@ -29,7 +29,9 @@ Todas las rutas, excepto `POST /auth/login`, requieren el header `Authorization:
 `admin@admin.com` / `admin123`.
 
 ## Esquema
-En el directorio `Esquema_db` se encuentra una imagen del modelo de datos 
+En el directorio `Esquema_db` se encuentra una imagen del modelo de datos y el esquema del sistema
+ .- Diagrama.png
+ .- schemma
 
 ##  Swagger
 http://localhost:3000/docs
