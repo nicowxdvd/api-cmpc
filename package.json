@@ -27,6 +27,7 @@
     "@nestjs/mapped-types": "^12.0.0",
     "@nestjs/passport": "^12.0.0",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/swagger": "^11.4.7",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "bcrypt": "^6.0.0",
@@ -77,8 +78,9 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": ["ts-jest", { "tsconfig": { "allowJs": true, "module": "commonjs", "moduleResolution": "node", "resolvePackageJsonExports": false, "esModuleInterop": true, "emitDecoratorMetadata": true, "experimentalDecorators": true, "target": "ES2023" } }]
     },
+    "transformIgnorePatterns": ["/node_modules/(?!(@nestjs/jwt|@nestjs/passport|@nestjs/config)/)"],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
