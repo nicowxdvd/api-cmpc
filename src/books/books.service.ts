@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { BooksRepository } from './repository/books.repository';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
@@ -7,6 +7,7 @@ import { QueryBooksDto } from './dto/query-books.dto';
 const escapar = (valor: string | number) => `"${String(valor).replace(/"/g, '""')}"`;
 @Injectable()
 export class BooksService {
+  private readonly logger = new Logger(BooksService.name);
   constructor(private readonly booksRepository: BooksRepository) {}
 
   findAll(query: QueryBooksDto) {
@@ -19,18 +20,23 @@ export class BooksService {
     return libro;
   }
 
-  create(dto: CreateBookDto) {
-    return this.booksRepository.create(dto);
+  async create(dto: CreateBookDto, usuarioId: number) {
+    const libro = await this.booksRepository.create(dto, usuarioId);
+    this.logger.log(`Usuario ${usuarioId} creó el libro ${libro.id}`);
+    return libro;
   }
 
-  async update(id: number, dto: UpdateBookDto) {
+  async update(id: number, dto: UpdateBookDto, usuarioId: number) {
     await this.findOne(id);
-    return this.booksRepository.update(id, dto);
+    const libro = await this.booksRepository.update(id, dto, usuarioId);
+    this.logger.log(`Usuario ${usuarioId} editó el libro ${id}`);
+    return libro;
   }
 
-  async remove(id: number) {
+  async remove(id: number, usuarioId: number) {
     await this.findOne(id);
-    await this.booksRepository.remove(id);
+    await this.booksRepository.remove(id, usuarioId);
+    this.logger.log(`Usuario ${usuarioId} borró el libro ${id}`);
   }
 
   async exportCsv(query: QueryBooksDto) {

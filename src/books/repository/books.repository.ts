@@ -54,15 +54,26 @@ export class BooksRepository {
     return this.prisma.libro.findFirst({ where: { id, deletedAt: null }, include });
   }
 
-  create(dto: CreateBookDto) {
-    return this.prisma.libro.create({ data: dto, include });
+  create(dto: CreateBookDto, usuarioId: number) {
+    return this.prisma.$transaction(async (tx) => {
+      const libro = await tx.libro.create({ data: dto, include });
+      await tx.log.create({ data: { usuarioId, accion: 'CREAR_LIBRO', detalles: { libroId: libro.id, ...dto } } });
+      return libro;
+    });
   }
 
-  update(id: number, dto: UpdateBookDto) {
-    return this.prisma.libro.update({ where: { id }, data: dto, include });
+  update(id: number, dto: UpdateBookDto, usuarioId: number) {
+    return this.prisma.$transaction(async (tx) => {
+      const libro = await tx.libro.update({ where: { id }, data: dto, include });
+      await tx.log.create({ data: { usuarioId, accion: 'EDITAR_LIBRO', detalles: { libroId: id, ...dto } } });
+      return libro;
+    });
   }
 
-  remove(id: number) {
-    return this.prisma.libro.update({ where: { id }, data: { deletedAt: new Date() } });
+  remove(id: number, usuarioId: number) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.libro.update({ where: { id }, data: { deletedAt: new Date() } });
+      await tx.log.create({ data: { usuarioId, accion: 'BORRAR_LIBRO', detalles: { libroId: id } } });
+    });
   }
 }
